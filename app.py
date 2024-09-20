@@ -1,28 +1,11 @@
-from flask import Flask
+from flask import Flask, redirect
 app = Flask(__name__)
 
 @app.route("/")
 @app.route("/index")
 def start():
-    return """
-<!doctype html>
-<html>
-    <head>
-        <tittle>Пономарева София Александровна, Лабораторная 1</tittle>
-    </head>
-    <body>
-        <header>
-        НГТУ, ФБ, Лабораторная работа 1
-        </header>
+    return redirect ('/menu', code=302)
 
-        <h1>web-сервер на flask</h1>
-
-        <footer>
-            &copy; Пономарева София, ФБИ-23, 3 курс, 2024
-        </footer>
-    </body>
-</html>
-"""   
 
 @app. route("/menu")
 def menu():
@@ -78,3 +61,5 @@ def lab1():
     </body>
 </html>
 """
+
+
