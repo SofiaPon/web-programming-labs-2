@@ -1,7 +1,13 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 app = Flask(__name__)
 
-
+@app.route('/lab2/example')
+def example():
+    name= 'София Пономарева'
+    lab_number2 = '2'
+    group = 'ФБИ-23'
+    course = '3'
+    return render_template('example.html', name=name, lab_number2=lab_number2, group=group, course=course)
 
 @app.route("/")
 @app.route("/index")
@@ -25,6 +31,7 @@ def menu():
         <main>
         <ol>
             <li><a href="http://127.0.0.1:5000/lab1">Первая лабораторная</a></li>
+            <li><a href='http://127.0.0.1:5000/lab2'>Вторая лабораторная</a></li>
         <ol>
         </main>
         <footer>
@@ -171,3 +178,8 @@ def BMW():
     </body>
 </html>
 '''
+
+
+
+
+
