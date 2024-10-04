@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if name %}
+            {{ name }} 
+        {% else %}
+            Студент не указан
+        {% endif %}
+        .Лабораторная работа {{ lab_number2 }}
+    </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <header>
+        WEB-программирование, часть 2.  
+        {% if lab_number2 %}
+            Лабораторная работа {{ lab_number2 }}
+        {% endif %}
+    </header>
+
+    {% block title %}
+    Список машин
+    {% endblock %}
+
+    {% block main %}
+        <h1>Список самых дорогих машин в мире</h1>
+        <div class="cars-list">
+            {% for berry in cars %}
+            <div class="cars-item">
+                <h3>{{ berry.name }}</h3>
+                <p>{{ berry.description }}</p>
+                <img src="{{ url_for('static', filename='images/' + berry.image) }}" alt="{{ berry.name }}">
+            </div>
+            {% endfor %}
+        </div>
+    {% endblock %}
+
+    <footer>
+        &copy; 
+        {% if name %}
+            {{ name }},
+        {% else %}
+            Анонимус,
+        {% endif %}
+        {% if group and course %}
+            {{ group }}, {{ course }} 
+        {% else %}
+            Информация о студенте недоступна
+        {% endif %}
+        курс, 2024
+    </footer>
+</body>
+</html>
