@@ -1,13 +1,7 @@
 from flask import Flask, redirect, url_for, render_template
 app = Flask(__name__)
 
-@app.route('/lab2/example')
-def example():
-    name= 'София Пономарева'
-    lab_number2 = '2'
-    group = 'ФБИ-23'
-    course = '3'
-    return render_template('example.html', name=name, lab_number2=lab_number2, group=group, course=course)
+
 
 @app.route("/")
 @app.route("/index")
@@ -180,6 +174,41 @@ def BMW():
 '''
 
 
+@app.route('/lab2/example')
+def example():
+    name= 'София Пономарева'
+    lab_number2 = '2'
+    group = 'ФБИ-23'
+    course = '3'
+    fruits = [
+        {'name': 'яблоки', 'price': 100},
+        {'name': 'груши', 'price': 120},
+        {'name': 'апельсины', 'price': 80},
+        {'name': 'мандарины', 'price': 95}, 
+        {'name': 'манго', 'price': 321},
+        ]
+    return render_template('example.html', name=name, lab_number2=lab_number2, group=group, course=course, fruits=fruits)
+    
 
 
 
+@app.route('/lab2/books')
+def books():   
+    name = 'София Пономарева'
+    lab_number2 = '2'
+    group = 'ФБИ-23'
+    course = '3'   
+    books = [
+        {"author": "Харуки Мураками", "title": "Кафка на пляже ", "genre": "Роман", "pages": 672},
+        {"author": "Фёдор Достоевский", "title": "Преступление и наказание", "genre": "Классика", "pages": 671},
+        {"author": "Лев Толстой", "title": "Война и мир", "genre": "Классика", "pages": 1225},
+        {"author": "Джейн Остин", "title": "Гордость и предубеждение", "genre": "Роман", "pages": 432},
+        {"author": "Рей Брэдбери", "title": "451 градус по Фаренгейту", "genre": "Фантастика", "pages": 249},
+        {"author": "Харуки Мураками", "title": "Норвежский лес", "genre": "Роман", "pages": 384},
+        {"author": "Харуки Мураками", "title": "Мой любимый sputnik", "genre": "Роман", "pages": 272},
+        {"author": "Джоан Роулинг", "title": "Гарри Поттер", "genre": "Роман", "pages": 432},
+        {"author": "Виктор Пелевин", "title": "Круть", "genre": "Фантастика", "pages": 324},
+        {"author": "Михаил Булгаков", "title": "Мастер и Маргарита", "genre": "Фантастика", "pages": 560}
+    ]
+
+    return render_template('books.html', name=name, lab_number2=lab_number2, group=group, course=course, books=books)
