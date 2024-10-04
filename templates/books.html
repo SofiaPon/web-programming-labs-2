@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if name %}
+        {{name}} 
+        {% else %}
+        Студент не указан
+        {% endif %}
+        .Лабораторная работа {{lab_number2}} </title>
+    <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}"></title>
+</head>
+<body>
+    <header>
+        WEB-программирование, часть 2.  
+        {% if lab_number2 %}
+            Лабораторная работа 
+        {{ lab_number2 }}
+    {% endif %}
+    </header>
+
+    {% block title %}
+    Список книг
+{% endblock %}
+
+{% block main %}
+
+    <h1>Список книг</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Автор</th>
+                <th>Название</th>
+                <th>Жанр</th>
+                <th>Количество страниц</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.author }}</td>
+                <td>{{ book.title }}</td>
+                <td>{{ book.genre }}</td>
+                <td>{{ book.pages }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+
+
+    <footer>
+        &copy; 
+        {% if name %}
+        {{ name }},
+        {% else %}
+        Анонимус,
+        {% endif %}
+        {% if group and course %}
+        {{ group }}, 
+        {{ course }} 
+        {% else %}
+        Информация о студенте недоступна
+        {% endif %}
+        курс, 2024
+    </footer>
+
+</body>
+</html>
