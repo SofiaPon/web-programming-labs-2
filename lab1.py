@@ -7,33 +7,6 @@ def start():
     return redirect ('/menu', code=302)
 
 
-@lab1. route("/menu")
-def menu():
-    return """
-<!doctype html>
-<html>
-    <head>
-        <title>НГТУ ФБ Лабораторные работы</title>
-    </head>
-    <body>
-        <header>
-            НГТУ, ФБ, WEB-программирование, часть 2. Список лабораторных
-        </header>
-        
-        <main>
-        <ol>
-            <li><a href="http://127.0.0.1:5000/lab1">Первая лабораторная</a></li>
-            <li><a href='http://127.0.0.1:5000/lab2'>Вторая лабораторная</a></li>
-        <ol>
-        </main>
-        <footer>
-            &copy; Пономарева София, ФБИ-23, 3 курс, 2024
-        </footer>
-    </body>
-</html>
-"""
-
-
 @lab1.route("/lab1")
 def lab():
     return """
@@ -84,7 +57,7 @@ def oak():
     </head>
     <body>
         <h1>Дуб</h1>
-        <img src="{url_for('static', filename='oak.jpg')}">
+        <img src="{url_for('static', filename='lab1/oak.jpg')}">
     </body>
 </html>
 '''
@@ -100,7 +73,7 @@ def student():
     </head>
     <body>
         <h1>Пономарева София Александровна</h1>
-        <img src="{url_for('static', filename='Логотип.png')}" width="300" height="200">
+        <img src="{url_for('static', filename='lab1/Логотип.png')}" width="300" height="200">
     </body>
 </html>
 '''
@@ -134,7 +107,7 @@ def python():
             Язык программирования он и выбрал — Python, что это означало название комик-группы. Это шоу 
             было весьма популярным среди программистов, которые находили в нем параллели с миром компьютерных технологий.
         </p>
-        <img src="{url_for('static', filename='Питон.png')}" width="300" height="200">
+        <img src="{url_for('static', filename='lab1/Питон.png')}" width="300" height="200">
     </body>
 </html>
 '''
@@ -170,7 +143,7 @@ def BMW():
         длязаднеприводной компоновки, с управляемостью, присущей полноприводным автомобилям. Вы можете 
         выбрать один из трех режимов движения: 4WD, 4WD Sport и - при отключенной DSC - 2WD.
     </p>
-    <img src="{url_for('static', filename='БМВ.jpg')}" width="300" height="200">
+    <img src="{url_for('static', filename='lab1/БМВ.jpg')}" width="300" height="200">
     </body>
 </html>
 '''
