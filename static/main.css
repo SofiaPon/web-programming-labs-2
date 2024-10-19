@@ -1,0 +1,50 @@
+body {
+    margin: 0;
+}
+
+main {
+margin-bottom: 40px;
+padding: 10px;
+}
+
+header{
+margin-bottom: 30px;
+padding: 20px;
+background: lightsteelblue;
+}
+
+footer {
+margin-top: 20px;
+padding: 10px;
+background: lightsteelblue;
+text-align: right;
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+}
+
+.cars-list {
+    display: flex; /* Использование flexbox */
+    flex-wrap: wrap; /* Оборачивание элементов при нехватке места */
+    justify-content: center; /* Центрирование элементов */
+}
+
+.cars-item {
+    background-color: white; /* Цвет фона карточки */
+    border-radius: 8px; /* Скругление углов */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень для глубины */
+    margin: 15px; /* Отступы между карточками */
+    padding: 10px; /* Внутренние отступы */
+    width: 300px; /* Ширина карточки */
+    text-align: center; /* Центрирование текста внутри карточки */
+
+}.cars-item img {
+    max-width: 100%; /* Ширина изображения по размеру карточки */
+    height: auto; /* Автоматическая высота для пропорций */
+    border-radius: 8px; /* Скругление углов изображения */
+}
+
+h1 {
+    text-align: center;
+}

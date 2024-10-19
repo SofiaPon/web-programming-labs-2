@@ -1,0 +1,14 @@
+body {
+    background-color: #f0f8ff; 
+    color: #333; 
+    font-family: Arial, sans-serif; 
+    text-align: center; 
+}
+
+img {
+    width: 80%; 
+    height: auto; 
+    max-width: 600px; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
