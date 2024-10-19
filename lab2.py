@@ -22,6 +22,7 @@ def menu():
         <ol>
             <li><a href="/lab1">Первая лабораторная</a></li>
             <li><a href='/lab2'>Вторая лабораторная</a></li>
+            <li><a href='/lab3'>Третья лабораторная</a></li>
         </ol>
         </main>
         <footer>
@@ -33,7 +34,7 @@ def menu():
 
 @lab2.route('/lab2/')
 def lab():
-    return render_template('lab2.html')
+    return render_template('lab2/lab2.html')
 
 @lab2.route('/lab2/example/')
 def example():
@@ -50,7 +51,7 @@ def example():
         {'name': 'манго', 'price': 321},
     ]
 
-    return render_template('example.html', name=name, lab_number2=lab_number2, group=group, course=course, fruits=fruits)
+    return render_template('lab2/example.html', name=name, lab_number2=lab_number2, group=group, course=course, fruits=fruits)
 
 @lab2.route('/lab2/books/')
 def books():
@@ -71,7 +72,7 @@ def books():
         {"author": "Михаил Булгаков", "title": "Мастер и Маргарита", "genre": "Фантастика", "pages": 560}
     ]
 
-    return render_template('books.html', name=name, lab_number2=lab_number2, group=group, course=course, books=books)
+    return render_template('lab2/books.html', name=name, lab_number2=lab_number2, group=group, course=course, books=books)
 
 @lab2.route('/lab2/cars/')
 def cars():
@@ -93,4 +94,4 @@ def cars():
         "image": "5 машина.jpeg"}
     ]
 
-    return render_template('cars.html', name=name, lab_number2=lab_number2, group=group, course=course, cars=cars)
+    return render_template('lab2/cars.html', name=name, lab_number2=lab_number2, group=group, course=course, cars=cars)
