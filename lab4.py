@@ -270,3 +270,53 @@ def grain_order():
         return render_template('lab4/grain_order.html', message=message, discount_message=discount_message)
 
     return render_template('lab4/grain_order.html')
+
+@lab4.route('/lab4/register/', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        login = request.form.get('login')
+        password = request.form.get('password')
+        name = request.form.get('name')
+        gender = request.form.get('gender')
+
+        #Проверка на пустые значения
+        if not login or not password or not name:
+            error = 'Все поля должны быть заполнены'
+            return render_template('lab4/register.html', error=error)
+
+        #Проверка, существует ли логин
+        if any(user['login'] == login for user in users):
+            error = 'Пользователь с таким логином уже существует'
+            return render_template('lab4/register.html', error=error)
+
+        #Добавляем нового пользователя
+        users.append({'login': login, 'password': password, 'name': name, 'gender': gender})
+        success_message = 'Регистрация прошла успешно'
+        return render_template('lab4/register.html', success_message=success_message)
+
+    return render_template('lab4/register.html')
+
+@lab4.route('/lab4/users/', methods=['GET', 'POST'])
+def users_list():
+    if 'login' not in session:
+        return redirect('/lab4/login')
+    
+    current_user = next((user for user in users if user['login'] == session['login']), None)
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'delete':
+            users.remove(current_user)
+            session.pop('login', None)
+            return redirect('/lab4/login')
+        elif action == 'edit':
+            new_name = request.form.get('name')
+            new_password = request.form.get('password')
+            if new_name:
+                current_user['name'] = new_name
+            if new_password:
+                current_user['password'] = new_password
+            success_message = 'Данные успешно обновлены'
+            return render_template('lab4/users.html', users=users, success_message=success_message)
+    
+    return render_template('lab4/users.html', users=users)
