@@ -6,6 +6,7 @@ from lab4 import lab4
 
 app = Flask(__name__)
 
+app.secret_key= 'секретно-секретный секрет'
 @app.route("/")
 @app.route("/index")
 def start():
