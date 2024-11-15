@@ -40,12 +40,30 @@ def menu():
 def lab():
     return render_template('lab5/lab5.html', login=session.get('login'))
 
+def db_connect():
+    conn = psycopg2.connect(
+    host='127.0.0.1',
+    database='kb',
+    user='sofia_ponomareva_knowledge_base',
+    password='123'
+    )
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    return conn, cur 
+
+def db_close(conn, cur):
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return render_template('lab5/lab5.html', login=session.get('login'))
+
+
 @lab5.route('/lab5/register/', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
-        return render_template('lab5/register.html')  # Отображаем форму регистрации
-
-    # Обработка данных формы при методе POST
+        return render_template('lab5/register.html')
+    
+    # Получаем данные из формы
     login = request.form.get('login')
     password = request.form.get('password')
 
@@ -53,37 +71,27 @@ def register():
     if not login or not password:
         return render_template('lab5/register.html', error="Заполните все поля")
 
-    try:
-        conn = psycopg2.connect(
-            host='127.0.0.1',
-            database='sofia_ponomareva_knowledge_base',
-            user='sofia_ponomareva_knowledge_base',
-            password='123'
-        )
-        cur = conn.cursor()
+    conn, cur = db_connect()
 
-        # Проверка на существование пользователя
-        cur.execute("SELECT login FROM users WHERE login = %s;", (login,))
-        if cur.fetchone():
-            return render_template('lab5/register.html', error="Такой пользователь уже существует")
+    # Проверка существования пользователя
+    if current_app.config['DB_TYPE'] == 'postgres':
+        cur.execute("SELECT login FROM users WHERE login=%s;", (login,))
+    else:
+        cur.execute("SELECT login FROM users WHERE login=?;", (login,))
 
-        # Если пользователя нет, добавляем нового пользователя
-        cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, password))
-        conn.commit()
+    if cur.fetchone():
+        db_close(conn, cur)
+        return render_template('lab5/register.html', error="Такой пользователь уже существует")
         
-        return render_template('lab5/success.html', login=login)
-
-    except Exception as e:
-        return render_template('lab5/register.html', error=f'Ошибка: {str(e)}')
-    
-    finally:
-        # Закрытие курсора и соединения
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
-
+    # Если пользователя нет, добавляем нового пользователя
+    password_hash = generate_password_hash(password)
+    if current_app.config['DB_TYPE'] == 'postgres': 
+        cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
+    else:
+        cur.execute("INSERT INTO users (login, password) VALUES (?, ?);", (login, password_hash))
+        
+    db_close(conn, cur) 
+    return render_template('lab5/success.html', login=login)
 
 @lab5.route('/lab5/login/', methods=['GET', 'POST'])
 def login():
@@ -105,7 +113,7 @@ def login():
             password='123'
         )
         cur = conn.cursor(cursor_factory=RealDictCursor)
-
+    
         # Используем параметризованный запрос
         cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
         user = cur.fetchone()
@@ -116,6 +124,7 @@ def login():
 
         # Успешный вход
         session['login'] = login
+        db_close(conn, cur)
         return render_template('lab5/success_login.html', login=login)
 
     except Exception as e:
