@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from werkzeug.security import check_password_hash, generate_password_hash 
 
 lab5 = Blueprint('lab5', __name__)
 
@@ -61,9 +62,9 @@ def db_close(conn, cur):
 @lab5.route('/lab5/register/', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
-        return render_template('lab5/register.html')
-    
-    # Получаем данные из формы
+        return render_template('lab5/register.html')  # Отображаем форму регистрации
+
+    # Обработка данных формы при методе POST
     login = request.form.get('login')
     password = request.form.get('password')
 
@@ -71,27 +72,37 @@ def register():
     if not login or not password:
         return render_template('lab5/register.html', error="Заполните все поля")
 
-    conn, cur = db_connect()
+    try:
+        conn = psycopg2.connect(
+            host='127.0.0.1',
+            database='sofia_ponomareva_knowledge_base',
+            user='sofia_ponomareva_knowledge_base',
+            password='123'
+        )
+        cur = conn.cursor()
 
-    # Проверка существования пользователя
-    if current_app.config['DB_TYPE'] == 'postgres':
-        cur.execute("SELECT login FROM users WHERE login=%s;", (login,))
-    else:
-        cur.execute("SELECT login FROM users WHERE login=?;", (login,))
+        # Проверка на существование пользователя
+        cur.execute("SELECT login FROM users WHERE login = %s;", (login,))
+        if cur.fetchone():
+            return render_template('lab5/register.html', error="Такой пользователь уже существует")
 
-    if cur.fetchone():
-        db_close(conn, cur)
-        return render_template('lab5/register.html', error="Такой пользователь уже существует")
-        
-    # Если пользователя нет, добавляем нового пользователя
-    password_hash = generate_password_hash(password)
-    if current_app.config['DB_TYPE'] == 'postgres': 
+        # Если пользователя нет, добавляем нового пользователя
+        password_hash = generate_password_hash(password)   
         cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
-    else:
-        cur.execute("INSERT INTO users (login, password) VALUES (?, ?);", (login, password_hash))
+        conn.commit()
         
-    db_close(conn, cur) 
-    return render_template('lab5/success.html', login=login)
+        return render_template('lab5/success.html', login=login)
+
+    except Exception as e:
+        return render_template('lab5/register.html', error=f'Ошибка: {str(e)}')
+    
+    finally:
+        # Закрытие курсора и соединения
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 @lab5.route('/lab5/login/', methods=['GET', 'POST'])
 def login():
@@ -119,7 +130,7 @@ def login():
         user = cur.fetchone()
 
         # Проверка существования пользователя
-        if user is None or user['password'] != password:
+        if user is None or check_password_hash(user['password'] != password):
             return render_template('lab5/login.html', error="Логин и/или пароль неверны")
 
         # Успешный вход
@@ -136,3 +147,5 @@ def login():
             cur.close()
         if conn:
             conn.close()
+
+
