@@ -108,44 +108,52 @@ def register():
 def login():
     if request.method == 'GET':
         return render_template('lab5/login.html')
-    
-    login = request.form.get('login')
+
+    login = request.form.get('login') 
     password = request.form.get('password')
 
-    # Проверка на заполненность полей
     if not login or not password:
         return render_template('lab5/login.html', error="Заполните поля")
     
-    try:
-        conn = psycopg2.connect(
-            host='127.0.0.1',
-            database='sofia_ponomareva_knowledge_base',
-            user='sofia_ponomareva_knowledge_base',
-            password='123'
-        )
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+    conn, cur = db_connect()
     
-        # Используем параметризованный запрос
-        cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
-        user = cur.fetchone()
+    if current_app.config['DB_TYPE'] == 'postgres':
+        cur.execute("SELECT * FROM users WHERE login=%s;", (login,))
+    else:
+        cur.execute("SELECT * FROM users WHERE login=?;", (login,))
 
-        # Проверка существования пользователя
-        if user is None or check_password_hash(user['password'] != password):
-            return render_template('lab5/login.html', error="Логин и/или пароль неверны")
+    user = cur.fetchone()
 
-        # Успешный вход
-        session['login'] = login
+    if not user:
         db_close(conn, cur)
-        return render_template('lab5/success_login.html', login=login)
-
-    except Exception as e:
-        return render_template('lab5/login.html', error=f'Ошибка: {str(e)}')
+        return render_template('lab5/login.html', error='Логин и/или пароль неверны')
     
-    finally:
-        # Закрытие курсора и соединения
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    if not check_password_hash(user['password'], password): 
+        db_close(conn, cur)
+        return render_template('lab5/login.html', error='Логин и/или пароль неверны')
+
+    session['login'] = login
+    db_close(conn, cur)
+    return render_template('lab5/success_login.html', login=login)
 
 
+@lab5.route('/lab5/create/', methods = ['GET', 'POST'])
+def create():
+    login=session.get('login')
+    if not login:
+        return redirect('/lab5/login/')
+    if request.method == 'GET':
+        return render_template('lab5/create_article.html')
+    
+    title = request.form.get('title')
+    article_text = request.form.get('article_text')
+    
+    conn, cur = db_connect()
+    
+    cur.execute("SELECT * FROM users WHERE login=%s;", (login, )) 
+    user_id = cur.fetchone()["id"]
+    
+    cur.execute("INSERT INTO articles (user_id, title, article_text) VALUES (%s, %s, %s);", (user_id, title, article_text))
+    
+    db_close(conn, cur)
+    return redirect('/lab5/')
