@@ -133,6 +133,7 @@ def login():
         # Используем параметризованный запрос
         cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
         user = cur.fetchone()
+        
         # Проверка существования пользователя
         if user is None or user['password'] != password:
             return render_template('lab5/login.html', error="Логин и/или пароль неверны")
