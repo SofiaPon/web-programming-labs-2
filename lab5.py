@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, session, redirect, request, curren
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash 
+import sqlite3
+from os import path
 
 lab5 = Blueprint('lab5', __name__)
 
@@ -46,7 +48,7 @@ def db_connect():
         conn = psycopg2.connect(
             host='127.0.0.1',
             database='kb',
-            user='irina_vidergold_knowledge_base',
+            user='sofia_ponomareva_knowledge_base',
             password='123'
         )
         cur = conn.cursor(cursor_factory=RealDictCursor)
