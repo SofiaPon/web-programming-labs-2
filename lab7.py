@@ -89,4 +89,11 @@ def del_film(id):
         abort(404, description="Фильм с таким ID не найден")
 
 
+@lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT']) 
+def put_film(id):
+    if id < 0 or id >= len(films):
+        return '', 404
+    film = request.get_json()
+    films[id]=film
+    return films[id]
 
