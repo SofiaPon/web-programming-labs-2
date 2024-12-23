@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, session, abort
+from flask import Blueprint, render_template, request, abort
 
 lab7 = Blueprint('lab7', __name__)
 
@@ -70,42 +70,50 @@ films= [
 @lab7.route('/lab7/rest-api/films/', methods=['GET'])
 def get_films():
     return films
-
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['GET']) 
 def get_film(id):
     # Проверка на принадлежность id диапазону
     if id < 0 or id >= len(films):
         abort(404)  # Возвращаем ошибку 404 если индекс неверный
     return films[id]
-
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['DELETE']) 
-def del_film(id):
-    # Проверяем, находится ли ID в допустимом диапазоне
-    if 0 <= id < len(films):
-        del films[id]  # Удаляем фильм с заданным ID
-        return '', 204  # Возвращаем пустой ответ с кодом 204 No Content
-    else:
-        # Если ID не корректен, возвращаем ошибку 404
-        abort(404, description="Фильм с таким ID не найден")
-
-
+def del_film(id): 
+    # Проверяем, существует ли фильм с данным id
+    if id < 0 or id >= len(films):
+        return '', 404  # Возврат статуса 404, если фильм не найден
+    
+    del films[id]
+    return '', 204
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT']) 
 def put_film(id):
     if id < 0 or id >= len(films):
         return '', 404
     film = request.get_json()
-    if film['description']== '':
-        return {'description': 'Заполните описание'}, 400
+
+    # Автоматически заполняем оригинальное название, если оно пустое
+    if film['title'] == '' and film['title_ru'] != '':
+        film['title'] = film['title_ru']
+
+    if film['description'] == '':
+        return {'description': 'Заполнение описание'}, 400
+
     films[id]=film
     return films[id]
 
-@lab7.route('/lab7/rest-api/films/', methods=['POST'])
+@lab7.route('/lab7/rest-api/films/', methods=['POST']) 
 def add_film():
-    film = request.get_json()
-    if not film or not all(key in film for key in ["title", "title_ru", "year", "description"]):
-        abort(400, description="Неполные данные фильма. Ожидаются: title, title_ru, year, description")
-    films.append(film)
-    return jsonify({"id": len(films) - 1}), 201
+    # Получаем данные нового фильма из тела запроса
+    new_film = request.get_json()
 
+    # Автоматически заполняем оригинальное название, если оно пустое
+    if new_film['title'] == '' and new_film['title_ru'] != '':
+        new_film['title'] = new_film['title_ru']
 
+    if new_film['description'] == '':
+        return {'description': 'Заполнение описание'}, 400
 
+    # Добавляем новый фильм в список
+    films.append(new_film)
+    
+    return '', 201  # 201 — статус код, указывающий на то, что ресурс был создан
+        
