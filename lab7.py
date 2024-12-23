@@ -1,119 +1,132 @@
-from flask import Blueprint, render_template, request, abort
+from flask import Blueprint, render_template, request, abort, current_app
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import sqlite3
+from os import path
 
 lab7 = Blueprint('lab7', __name__)
+
+def db_connect():
+    if current_app.config['DB_TYPE'] == 'postgres':
+        conn = psycopg2.connect(
+            host='127.0.0.1',
+            database='alina_andreicheva_knowledge_base',
+            user='alina_andreicheva_knowledge_base',
+            password='123'
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+    else:
+        dir_path = path.dirname(path.realpath(__file__))
+        db_path = path.join(dir_path, "database.db")
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+    return conn, cur
+
+def db_close(conn, cur, commit=False):
+    if commit:
+        conn.commit()
+    cur.close()
+    conn.close()
 
 @lab7.route('/lab7/')
 def main():
     return render_template('lab7/lab7.html')
 
-films= [
-        {
-            "tittle": 'Tenet',
-            "tittle_ru": 'Довод',
-            "year": 2020,
-            "descriprion": 'После теракта в киевском оперном театре агент ЦРУ объединяется с \
-            британской разведкой, чтобы противостоять русскому олигарху, который сколотил \
-            состояние на торговле оружием. Для этого агенты используют инверсию времени — \
-            технологию будущего, позволяющую времени идти вспять.'
 
-        },
-
-         {
-            "tittle": 'Ready Player One',
-            "tittle_ru": 'Первому игроку приготовиться',
-            "year": 2018,
-            "descriprion": 'Действие фильма происходит в 2045 году, мир погружается в хаос и \
-            находится на грани коллапса. Люди ищут спасения в игре OASIS – огромной вселенной \
-            виртуальной реальности. Ее создатель, гениальный и эксцентричный Джеймс Холлидэй, \
-            оставляет уникальное завещание. Все его колоссальное состояние получит игрок, первым \
-            обнаруживший цифровое «пасхальное яйцо», которое миллиардер спрятал где-то на просторах \
-            OASISа. Запущенный им квест охватывает весь мир. Совершенно негероический парень по имени \
-            Уэйд Уоттс решает принять участие в состязании, с головой бросаясь в головокружительную, \
-            искажающую реальность погоню за сокровищами по фантастической вселенной, полной загадок, \
-            открытий и опасностей.'
-
-        },
-
-         {
-            "tittle": 'The Batman',
-            "tittle_ru": 'Бэтмен',
-            "year": 2022,
-            "descriprion": 'После двух лет поисков правосудия на улицах Готэма Бэтмен становится \
-            для горожан олицетворением беспощадного возмездия. Когда в городе происходит серия \
-            жестоких нападений на высокопоставленных чиновников, улики приводят Брюса Уэйна в \
-            самые тёмные закоулки преступного мира, где он встречает Женщину-Кошку, Пингвина, \
-            Кармайна Фальконе и Загадочника. Теперь под прицелом оказывается сам Бэтмен, которому \
-            предстоит отличить друга от врага и восстановить справедливость во имя Готэма.'
-
-        },
-
-         {
-            "tittle": 'Catwoman',
-            "tittle_ru": 'Женщина-кошка',
-            "year": 2004,
-            "descriprion": 'Пейшинс Филипс работает дизайнером в крупной косметической компании, \
-            которая готовится выпустить на рынок новый продукт, замедляющий старение. Но у этой \
-            революционной новинки есть существенный недостаток, который компания тщательно скрывает \
-            и о котором случайно узнает Пэйшинс. Дальнейшие события меняют ее жизнь самым невероятным образом...'
-
-        },
-
-        {
-            "tittle": 'Отряд самоубийц',
-            "tittle_ru": 'Suicide Squad',
-            "year": 2016,
-            "descriprion": 'Правительство решает дать команде суперзлодеев шанс на искупление. \
-            Подвох в том, что их отправляют на выполнение миссии, где они, вероятнее всего, погибнут.'
-
-        },
-    ]
 @lab7.route('/lab7/rest-api/films/', methods=['GET'])
 def get_films():
     return films
-@lab7.route('/lab7/rest-api/films/<int:id>', methods=['GET']) 
+
+@lab7.route('/lab7/rest-api/films/<int:id>', methods=['GET'])
 def get_film(id):
-    # Проверка на принадлежность id диапазону
-    if id < 0 or id >= len(films):
-        abort(404)  # Возвращаем ошибку 404 если индекс неверный
-    return films[id]
+    conn, cur = db_connect()
+    cur.execute("SELECT * FROM films WHERE id = %s;", (id,) if current_app.config['DB_TYPE'] == 'postgres' else (id,))
+    film = cur.fetchone()
+    db_close(conn, cur)
+    if film is None:
+        abort(404)
+    return dict(film)
+
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['DELETE']) 
 def del_film(id): 
-    # Проверяем, существует ли фильм с данным id
-    if id < 0 or id >= len(films):
-        return '', 404  # Возврат статуса 404, если фильм не найден
-    
-    del films[id]
-    return '', 204
+   conn, cur = db_connect()
+   cur.execute("DELETE FROM films WHERE id = %s;", (id,) if current_app.config['DB_TYPE'] == 'postgres' else (id,))
+   db_close(conn, cur, commit=True)
+   return '', 204
+
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT']) 
 def put_film(id):
-    if id < 0 or id >= len(films):
-        return '', 404
-    film = request.get_json()
+    conn, cur = db_connect()
 
-    # Автоматически заполняем оригинальное название, если оно пустое
-    if film['title'] == '' and film['title_ru'] != '':
+    if not film.get('title_ru'):
+        return {'title_ru': 'Русское название обязательно'}, 400
+
+    if film.get('description', '') == '':
+        return {'description': 'Описание обязательно'}, 400
+
+    if film['year'] < 1895 or film['year'] > 2023:
+        return {'year': 'Год должен быть между 1895 и 2023'}, 400
+
+    if not film.get('title') and film['title_ru']:
         film['title'] = film['title_ru']
 
-    if film['description'] == '':
-        return {'description': 'Заполнение описание'}, 400
+    cur.execute("""
+        UPDATE films 
+        SET title = %s, title_ru = %s, year = %s, description = %s 
+        WHERE id = %s;
+    """, (
+        film['title'],
+        film['title_ru'],
+        film['year'],
+        film['description'],
+        id
+    ) if current_app.config['DB_TYPE'] == 'postgres' else (
+        film['title'],
+        film['title_ru'],
+        film['year'],
+        film['description'],
+        id
+    ))
 
-    films[id]=film
-    return films[id]
+    db_close(conn, cur, commit=True)
+    return film
 
 @lab7.route('/lab7/rest-api/films/', methods=['POST']) 
 def add_film():
-    # Получаем данные нового фильма из тела запроса
+   
     new_film = request.get_json()
+    if not new_film.get('title_ru'):
+        return {'title_ru': 'Русское название обязательно'}, 400
 
-    # Автоматически заполняем оригинальное название, если оно пустое
-    if new_film['title'] == '' and new_film['title_ru'] != '':
+    if new_film['description'] == '' or len(new_film['description']) > 2000:
+        return {'description': 'Описание обязательно и не может превышать 2000 символов'}, 400
+
+    if new_film['year'] < 1895 or new_film['year'] > 2023:
+        return {'year': 'Год должен быть между 1895 и 2023'}, 400
+
+    if not new_film.get('title') and new_film['title_ru']:
         new_film['title'] = new_film['title_ru']
 
-    if new_film['description'] == '':
-        return {'description': 'Заполнение описание'}, 400
+    conn, cur = db_connect()
+    cur.execute("""
+        INSERT INTO films (title, title_ru, year, description) 
+        VALUES (%s, %s, %s, %s);
+    """, (
+        new_film['title'],
+        new_film['title_ru'],
+        new_film['year'],
+        new_film['description']
+    ) if current_app.config['DB_TYPE'] == 'postgres' else (
+        new_film['title'],
+        new_film['title_ru'],
+        new_film['year'],
+        new_film['description']
+    ))
 
-    # Добавляем новый фильм в список
-    films.append(new_film)
+    db_close(conn, cur, commit=True)
+    return '', 201
+
+
     
-    return '', 201  # 201 — статус код, указывающий на то, что ресурс был создан
-        
+      
