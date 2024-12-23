@@ -22,7 +22,7 @@ function fillFilmList() {
             let editButton = document.createElement('button');
             editButton.innerText = 'редактировать';
             editButton.onclick = function() {
-                editFilm(i);
+                editFilm(films[i].id); // передаем правильный ID
               };             
             editButton.innerText = 'Редактировать';         
             editButton.onclick = function() {
@@ -32,7 +32,7 @@ function fillFilmList() {
             let delButton = document.createElement('button');
             delButton.innerText = 'Удалить';
             delButton.onclick = function(){
-                deleteFilm(i, films[i].title_ru);
+                deleteFilm(films[i].id, films[i].title_ru); // передаем правильный ID
             };
 
 
@@ -47,6 +47,7 @@ function fillFilmList() {
 
             tbody.append(tr);
         }
+        
     })
     .catch(function(error) {
         console.error('Error fetching films:', error);
@@ -58,8 +59,12 @@ function deleteFilm(id, title) {
         return;
 
     fetch(`/lab7/rest-api/films/${id}`, {method: 'DELETE'})
-    .then(function () {
-        fillFilmList();
+    .then(function (response) {
+        if(response.ok) {
+            fillFilmList();
+        } else {
+            console.error('Error deleting film:', response.statusText);
+        }
     });
 }
 
@@ -93,11 +98,11 @@ function sendFilm() {
     const film = {
       title: document.getElementById('title').value,
       title_ru: document.getElementById('title-ru').value,
-      year: document.getElementById('year').value,
+      year: parseInt(document.getElementById('year').value, 10),
       description: document.getElementById('description').value
     }
 
-    const url = `/lab7/rest-api/films/${id}`;
+    const url = id === '' ? `/lab7/rest-api/films/` : `/lab7/rest-api/films/${id}`;
     const method = id === '' ? 'POST' : 'PUT';
 
     fetch(url, {
@@ -116,8 +121,15 @@ function sendFilm() {
 
     .then(function(errors) {
         document.getElementById('description-error').innerText = '';
-        if (errors.description)
+        if (errors.title_ru) {
+            alert(errors.title_ru);
+        }
+        if (errors.description) {
             document.getElementById('description-error').innerText = errors.description;
+        }
+        if (errors.year) {
+            alert(errors.year);
+        }
     });
 
 }
