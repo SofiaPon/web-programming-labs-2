@@ -4,7 +4,7 @@ from psycopg2.extras import RealDictCursor
 import sqlite3
 from os import path
 
-lab7 = Blueprint('lab7', __name__)
+lab7 = Blueprint('lab7', __name__, static_folder='static')
 
 def db_connect():
     if current_app.config['DB_TYPE'] == 'postgres':
@@ -41,7 +41,8 @@ def get_films():
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['GET'])
 def get_film(id):
     conn, cur = db_connect()
-    cur.execute("SELECT * FROM films WHERE id = %s;", (id,) if current_app.config['DB_TYPE'] == 'postgres' else (id,))
+    query = "SELECT * FROM films WHERE id = %s;" if current_app.config['DB_TYPE'] == 'postgres' else "SELECT * FROM films WHERE id = ?;"
+    cur.execute(query, (id,) if current_app.config['DB_TYPE'] == 'postgres' else (id,))
     film = cur.fetchone()
     db_close(conn, cur)
     if film is None:
@@ -51,7 +52,8 @@ def get_film(id):
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['DELETE']) 
 def del_film(id): 
    conn, cur = db_connect()
-   cur.execute("DELETE FROM films WHERE id = %s;", (id,) if current_app.config['DB_TYPE'] == 'postgres' else (id,))
+   query = "DELETE FROM films WHERE id = %s;" if current_app.config['DB_TYPE'] == 'postgres' else "DELETE FROM films WHERE id = ?;"
+   cur.execute(query, (id,) if current_app.config['DB_TYPE'] == 'postgres' else (id,))
    db_close(conn, cur, commit=True)
    return '', 204
 
@@ -71,11 +73,18 @@ def put_film(id):
     if not film.get('title') and film['title_ru']:
         film['title'] = film['title_ru']
 
-    cur.execute("""
+    
+    update_query = """
         UPDATE films 
         SET title = %s, title_ru = %s, year = %s, description = %s 
         WHERE id = %s;
-    """, (
+     """ if current_app.config['DB_TYPE'] == 'postgres' else """
+        UPDATE films 
+        SET title = ?, title_ru = ?, year = ?, description = ? 
+        WHERE id = ?;
+    """
+
+    params = (
         film['title'],
         film['title_ru'],
         film['year'],
@@ -87,8 +96,9 @@ def put_film(id):
         film['year'],
         film['description'],
         id
-    ))
-
+    )
+    
+    cur.execute(update_query, params)
     db_close(conn, cur, commit=True)
     return film
 
@@ -109,10 +119,15 @@ def add_film():
         new_film['title'] = new_film['title_ru']
 
     conn, cur = db_connect()
-    cur.execute("""
+    insert_query = """
         INSERT INTO films (title, title_ru, year, description) 
         VALUES (%s, %s, %s, %s);
-    """, (
+    """ if current_app.config['DB_TYPE'] == 'postgres' else """
+        INSERT INTO films (title, title_ru, year, description) 
+        VALUES (?, ?, ?, ?);
+    """
+
+    params = (
         new_film['title'],
         new_film['title_ru'],
         new_film['year'],
@@ -122,11 +137,12 @@ def add_film():
         new_film['title_ru'],
         new_film['year'],
         new_film['description']
-    ))
+    )
 
+    cur.execute(insert_query, params)
     db_close(conn, cur, commit=True)
     return '', 201
 
 
-    
-      
+
+
