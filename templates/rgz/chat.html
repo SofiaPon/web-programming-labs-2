@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block main %}
+<style>
+
+    /* Контейнер для чата */
+    #chat-container {
+        width: 100%;
+        max-width: 600px;
+        background-color: #1e293b;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    /* Заголовок */
+    .title {
+        font-size: 24px;
+        font-family: "Montserrat SemiBold", sans-serif;
+        color: #0c0fc8;
+        text-align: center;
+    }
+
+    /* Список сообщений */
+    #messages-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        background-color: #0f172a;
+        padding: 8px;
+        scroll-behavior: smooth;
+    }
+
+    /* Элементы сообщений */
+    .message {
+        margin: 8px 0;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background-color: #1e40af;
+        color: #f3f4f6;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+    }
+
+    /* Кнопка удаления сообщения */
+    .message button {
+        display: inline-block;
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        cursor: pointer;
+        margin-left: 10px;
+        font-size: 12px;
+        border-radius: 4px;
+    }
+
+    /* Сильный текст (имя пользователя) */
+    .message strong {
+        color: #93c5fd;
+    }
+
+    /* Форма чата */
+    #chat-form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    /* Текстовое поле */
+    #chat-form textarea {
+        width: 95%;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        padding: 8px 12px;
+        background-color: #0f172a;
+        color: #f3f4f6;
+        resize: none;
+        font-size: 14px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    #chat-form textarea:focus {
+        outline: none;
+        border-color: #60a5fa;
+        box-shadow: 0 0 5px #60a5fa;
+    }
+
+    /* Кнопка отправки */
+    #chat-form button {
+        align-self: center;
+        background-color: #2563eb;
+        color: #f3f4f6;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #chat-form button:hover {
+        background-color: #3b82f6;
+    }
+
+    #chat-form button:active {
+        background-color: #1d4ed8;
+    }
+</style>
+
+<h4 class="title">Чат с <span id="receiver-name">{{ receiver_name }}</span></h4>
+
+<div id="chat-container">
+    <ul id="messages-list">
+        <!-- Сообщения будут добавляться здесь через JavaScript -->
+        {% for message in messages %}
+        <li class="message">
+            <strong>{{ user_names[message.sender_id] }}:</strong> {{ message.message_text }}
+            <button>Удалить</button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <form id="chat-form">
+        <textarea name="message" rows="3" required></textarea>
+        <button type="submit">Отправить</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const userId = {{ receiver_id }};  // Идентификатор получателя
+        const currentUserId = {{ current_user_id }};  // Идентификатор текущего пользователя
+
+        function updateMessages(messages, userNames) {
+            const messagesContainer = document.getElementById('messages-list');
+            messagesContainer.innerHTML = ''; // Очистка предыдущих сообщений
+
+            messages.forEach(msg => {
+                if (msg.is_deleted) return; // Пропускаем удаленные сообщения
+
+                const messageElement = document.createElement('li');
+                messageElement.classList.add('message');
+
+                const userName = userNames[msg.sender_id] || 'Неизвестный пользователь';
+                const messageText = msg.message_text || '';
+                messageElement.innerHTML = `<strong>${userName}:</strong> ${messageText}`;
+
+                // Проверяем наличие ID
+                console.log("ID сообщения:", msg.id);
+                if (msg.id) {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Удалить';
+                    deleteButton.addEventListener('click', () => deleteMessage(msg.id, messageElement));
+                    messageElement.appendChild(deleteButton);
+                    console.log('Кнопка "Удалить" добавлена для сообщения с ID:', msg.id);
+                }
+
+                messagesContainer.appendChild(messageElement);
+            });
+        }
+
+        function deleteMessage(messageId, messageElement) {
+            fetch(`/rgz/messages/delete/${messageId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        messageElement.remove();  // Удаляем сообщение из DOM
+                    } else {
+                        console.error('Ошибка при удалении сообщения:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при удалении сообщения:', error);
+                });
+        }
+
+        fetch(`/rgz/chat/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Данные, полученные с сервера:", data); // Проверьте, что данные приходят
+                if (data.status === 'success') {
+                    console.log("Вызов updateMessages с:", data.messages);
+                    updateMessages(data.messages, data.user_names);
+                } else {
+                    console.error("Ошибка статуса:", data.message);
+                }
+            })
+            .catch(error => console.error("Ошибка при загрузке сообщений:", error));
+
+        document.getElementById('chat-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const message = document.querySelector('textarea[name="message"]').value;
+
+            fetch(`/rgz/chat/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        updateMessages(data.messages, data.user_names);
+                        document.querySelector('textarea[name="message"]').value = '';
+                    } else {
+                        console.error('Ошибка при отправке сообщения:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при отправке сообщения:', error);
+                });
+        });
+    });
+</script>
+
+{% endblock %}

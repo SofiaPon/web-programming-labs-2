@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block lab %}Панель администратора{% endblock %}
+
+{% block main %}
+    <style>
+        .admin-panel {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow:
+                    0 6px 15px rgba(12, 15, 200, 0.4),
+                    0 3px 20px rgba(12, 15, 200, 0.3),
+                    0 1px 40px rgba(12, 15, 200, 0.2),
+                    inset 0 -1px 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .user-list th, .user-list td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .user-list th {
+            background: rgba(12, 15, 200, 0.2);
+        }
+
+        .btn-edit {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            background: #00aaff;
+        }
+
+        .btn-delete {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            background: #ff4d4d;
+        }
+
+        .title {
+            font-size: 32px;
+            font-family: "Montserrat SemiBold", sans-serif;
+            color: #0c0fc8;
+        }
+    </style>
+
+
+    <div class="admin-panel">
+        <h1 class="title">Управление Пользователями</h1>
+
+        <table class="users-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Логин</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+            <tr data-user-id="{{ user.id }}">
+                <td>{{ user.id }}</td>
+                <td>
+                    <input type="text" class="user-login" value="{{ user.login }}">
+                </td>
+                <td>
+                    <button class="btn-edit">Редактировать</button>
+                    <button class="btn-delete">Удалить</button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div id="response-message" class="response-message"></div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const apiUrl = '/rgz/admin/api';
+            const responseMessage = document.getElementById('response-message');
+
+            // Отправка JSON-RPC запроса
+            const sendJsonRpcRequest = async (method, params) => {
+                const payload = {
+                    jsonrpc: "2.0",
+                    method: method,
+                    params: params,
+                    id: new Date().getTime() // Генерируем уникальный ID для каждого запроса
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    if (data.error) {
+                        throw new Error(data.error.message);
+                    }
+                    return data.result;
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    responseMessage.textContent = `Ошибка: ${error.message}`;
+                    responseMessage.style.color = 'red';
+                    return null;
+                }
+            };
+
+            // Обработка кнопок "Редактировать"
+            document.querySelectorAll('.btn-edit').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const row = e.target.closest('tr');
+                    const userId = row.dataset.userId;
+                    const login = row.querySelector('.user-login').value;
+
+                    const result = await sendJsonRpcRequest('edit_user', { user_id: userId, login: login });
+                    if (result) {
+                        responseMessage.textContent = result.message;
+                        responseMessage.style.color = 'green';
+                    }
+                });
+            });
+
+            // Обработка кнопок "Удалить"
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const row = e.target.closest('tr');
+                    const userId = row.dataset.userId;
+
+                    const result = await sendJsonRpcRequest('delete_user', { user_id: userId });
+                    if (result) {
+                        responseMessage.textContent = result.message;
+                        responseMessage.style.color = 'green';
+                        row.remove(); // Удаляем строку из таблицы
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
