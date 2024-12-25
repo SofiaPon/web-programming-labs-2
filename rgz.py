@@ -266,14 +266,13 @@ def edit_user_api(params):
 @rgz.route('/rgz/users', methods=['GET'])
 @login_required
 def user_list():
-    current_user = session.get('login')
     conn, cur = db_connect()
 
-    # Получение списка пользователей, кроме текущего пользователя и администратора
+    # Получение списка всех пользователей
     if current_app.config['DB_TYPE'] == 'postgres':
-        cur.execute("SELECT id, login FROM users WHERE login != %s AND login != %s;", (current_user, ADMIN_USER))
+        cur.execute("SELECT id, login FROM users;")
     else:
-        cur.execute("SELECT id, login FROM users WHERE login != ? AND login != ?;", (current_user, ADMIN_USER))
+        cur.execute("SELECT id, login FROM users;")
 
     users = cur.fetchall()
     db_close(conn, cur)
