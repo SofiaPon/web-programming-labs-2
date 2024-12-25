@@ -262,23 +262,46 @@ def edit_user_api(params):
     finally:
         db_close(conn, cur)
 
-# Получение списка пользователей
-@rgz.route('/rgz/users', methods=['GET'])
+# Получение списка пользователей через JSON-RPC
+@rgz.route('/rgz/users', methods=['POST'])
 @login_required
 def user_list():
+    data = request.get_json()
+    try:
+        # Проверяем структуру JSON-RPC
+        if 'jsonrpc' not in data or data['jsonrpc'] != '2.0' or 'method' not in data or 'id' not in data:
+            raise ValueError("Неверный формат JSON-RPC")
+
+        method = data['method']
+        params = data.get('params', {})
+
+        # Вызов метода
+        if method == 'get_user_list':
+            result = get_user_list(params)
+        else:
+            raise ValueError("Неизвестный метод")
+
+        return jsonify({"jsonrpc": "2.0", "result": result, "id": data['id']})
+
+    except ValueError as e:
+        return jsonify({"jsonrpc": "2.0", "error": {"code": -32602, "message": str(e)}, "id": data.get('id', None)}), 400
+    except Exception as e:
+        return jsonify({"jsonrpc": "2.0", "error": {"code": -32603, "message": "Ошибка сервера"}, "id": data.get('id', None)}), 500
+
+def get_user_list(params):
+    current_user = session.get('login')
     conn, cur = db_connect()
 
-    # Получение списка всех пользователей
+    # Получаем список пользователей, кроме текущего и администратора
     if current_app.config['DB_TYPE'] == 'postgres':
-        cur.execute("SELECT id, login FROM users;")
+        cur.execute("SELECT id, login FROM users WHERE login != %s AND login != %s;", (current_user, ADMIN_USER))
     else:
-        cur.execute("SELECT id, login FROM users;")
+        cur.execute("SELECT id, login FROM users WHERE login != ? AND login != ?;", (current_user, ADMIN_USER))
 
     users = cur.fetchall()
     db_close(conn, cur)
 
-    # Возвращаем список пользователей в формате JSON
-    return jsonify({'status': 'success', 'users': users})
+    return {'status': 'success', 'users': users}
 
 
 @rgz.route('/rgz/chat/<int:user_id>', methods=['GET', 'POST'])

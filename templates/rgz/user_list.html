@@ -38,32 +38,58 @@
 </ul>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/rgz/users', {  // Путь к вашему роуту
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.users) {
-                    const usersList = document.getElementById('users-list');
-                    data.users.forEach(user => {
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `${user.login} <a href="/rgz/chat/${user.id}">Перейти в чат</a>`;
-                        usersList.appendChild(listItem);
-                    });
-                } else {
-                    alert('Ошибка при загрузке списка пользователей');
+    document.addEventListener('DOMContentLoaded', () => {
+        const apiUrl = '/rgz/users';
+        const responseMessage = document.getElementById('response-message');
+
+        // Функция отправки JSON-RPC запроса
+        const sendJsonRpcRequest = async (method, params) => {
+            const payload = {
+                jsonrpc: "2.0",
+                method: method,
+                params: params,
+                id: new Date().getTime() // Генерируем уникальный ID для каждого запроса
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error.message);
                 }
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке списка пользователей:', error);
-                alert('Ошибка при загрузке списка пользователей');
-            });
+                return data.result;
+            } catch (error) {
+                console.error('Ошибка:', error);
+                responseMessage.textContent = `Ошибка: ${error.message}`;
+                responseMessage.style.color = 'red';
+                return null;
+            }
+        };
+
+        // Отправка запроса для получения списка пользователей
+        const getUserList = async () => {
+            const result = await sendJsonRpcRequest('get_user_list', {});
+            if (result) {
+                const usersList = document.getElementById('users-list');
+                result.users.forEach(user => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `${user.login} <a href="/rgz/chat/${user.id}">Перейти в чат</a>`;
+                    usersList.appendChild(listItem);
+                });
+            }
+        };
+
+        // Загрузка списка пользователей после загрузки страницы
+        getUserList();
     });
+
 </script>
 
 {% endblock %}
-
