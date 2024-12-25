@@ -9,11 +9,10 @@
     <div>
         <label>Пароль: <input type="password" name="password"></label>
     </div>
-    <div>
-        {% if error %}
-            <p style="color: red;">{{ error }}</p>
-        {% endif %}
-    </div>
+   
     <button type="submit">Зарегистрироваться</button>
 </form>
+{% if error %}
+<div style="color: red;">{{ error }}</div>
+{% endif %}
 {% endblock %}
