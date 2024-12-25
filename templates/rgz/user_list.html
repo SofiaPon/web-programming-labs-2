@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<style>
+    .title {
+        font-size: 32px;
+        font-family: "Montserrat SemiBold", sans-serif;
+        color: #0c0fc8;
+    }
+
+    #users-list {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow:
+                0 6px 15px rgba(12, 15, 200, 0.4),
+                0 3px 20px rgba(12, 15, 200, 0.3),
+                0 1px 40px rgba(12, 15, 200, 0.2),
+                inset 0 -1px 3px rgba(255, 255, 255, 0.3);
+    }
+
+    li {
+        list-style-type: none;
+        font-family: "Montserrat Medium", sans-serif;
+        font-size: 16px;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+</style>
+
+<h1 class="title">Список пользователей</h1>
+<ul id="users-list">
+    <!-- Список пользователей будет загружаться через JavaScript -->
+</ul>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const apiUrl = '/rgz/users';
+
+        // Функция для отправки JSON-RPC запроса
+        const sendJsonRpcRequest = async (method, params) => {
+            const payload = {
+                jsonrpc: "2.0",
+                method: method,
+                params: params,
+                id: new Date().getTime()
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+                return data.result;
+            } catch (error) {
+                console.error('Ошибка при отправке запроса:', error);
+                alert(`Ошибка: ${error.message}`);
+                return null;
+            }
+        };
+
+        // Функция для получения списка пользователей
+        const getUserList = async () => {
+            const result = await sendJsonRpcRequest('get_user_list', {});
+            if (result) {
+                const usersList = document.getElementById('users-list');
+                if (usersList) {
+                    result.users.forEach(user => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `${user.login} <a href="/rgz/chat/${user.id}">Перейти в чат</a>`;
+                        usersList.appendChild(listItem);
+                    });
+                }
+            }
+        };
+
+        // Вызов функции получения списка пользователей
+        getUserList();
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block lab %} РГЗ {% endblock %}
+
+{% block main %}
+
+    <style>
+        .title {
+            font-size: 32px;
+            font-family: "Montserrat SemiBold", sans-serif;
+            color: #0c0fc8;
+        }
+
+        .text {
+            font-family: "Montserrat Medium", sans-serif;
+            font-size: 16px;
+            color: black;
+        }
+
+        .link {
+            font-family: "Montserrat Medium", sans-serif;
+            font-size: 16px;
+            color: white;
+        }
+
+        .link a {
+            font-family: "Montserrat Medium", sans-serif;
+            font-size: 16px;
+            color: #f97316;
+        }
+
+        .button {
+            font-family: "Montserrat Medium", sans-serif;
+            font-size: 16px;
+            color: white;
+            border: none;
+            background-color: #0c0fc8;
+            padding: 5px;
+        }
+    </style>
+
+    <h1 class="title">Панель администратора</h1>
+    <p class="text">Вы можете:</p>
+    <ul class="link">
+        <li><a href="{{ url_for('rgz.manage_users') }}">Управлять пользователями</a></li>
+    </ul>
+    <a class="button" href="{{ url_for('rgz.logout') }}">Выйти</a>
+
+{% endblock %}

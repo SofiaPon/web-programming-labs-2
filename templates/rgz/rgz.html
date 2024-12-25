@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block lab %} РГЗ {% endblock %}
+
+{% block main %}
+    <style>
+
+        .welcome-container {
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            max-width: 600px;
+            box-shadow:
+                    0 6px 15px rgba(12, 15, 200, 0.4),
+                    0 3px 20px rgba(12, 15, 200, 0.3),
+                    0 1px 40px rgba(12, 15, 200, 0.2),
+                    inset 0 -1px 3px rgba(255, 255, 255, 0.3);
+            font-family: "Montserrat Medium", sans-serif;
+            font-size: 16px;
+        }
+
+        .welcome-container h1 {
+            font-size: 32px;
+            font-family: "Montserrat SemiBold", sans-serif;
+            color: #0c0fc8;
+        }
+
+        .welcome-container a {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            color: #ffffff;
+            background-color: rgba(12, 15, 200, 0.6);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .welcome-container a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+
+
+    <div class="welcome-container">
+        {% if not session['login'] %}
+        <h1>Добро пожаловать!</h1>
+        <p>Пожалуйста, <a href="{{ url_for('rgz.login') }}">авторизуйтесь</a> или <a href="{{ url_for('rgz.register') }}">зарегистрируйтесь</a>, чтобы продолжить.</p>
+        {% else %}
+        <h1>Добро пожаловать, {{ session['login'] }}!</h1>
+        <p>Вы авторизованы. <a href="{{ url_for('rgz.logout') }}">Выйти</a></p>
+        {% endif %}
+    </div>
+{% endblock %}
