@@ -264,29 +264,53 @@ def edit_user_api(params):
 
 # Получение списка пользователей через JSON-RPC
 @rgz.route('/rgz/users', methods=['POST'])
-@login_required
 def user_list():
-    data = request.get_json()
     try:
-        # Проверяем структуру JSON-RPC
-        if 'jsonrpc' not in data or data['jsonrpc'] != '2.0' or 'method' not in data or 'id' not in data:
-            raise ValueError("Неверный формат JSON-RPC")
+        data = request.get_json()
 
-        method = data['method']
-        params = data.get('params', {})
+        # Проверяем корректность запроса
+        if not data or data.get('method') != 'get_user_list':
+            return jsonify({
+                "jsonrpc": "2.0",
+                "error": {
+                    "code": -32600,
+                    "message": "Invalid Request"
+                },
+                "id": data.get("id") if data else None
+            }), 400
 
-        # Вызов метода
-        if method == 'get_user_list':
-            result = get_user_list(params)
+        conn, cur = db_connect()
+
+        # Получаем список пользователей
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("SELECT id, login FROM users;")
         else:
-            raise ValueError("Неизвестный метод")
+            cur.execute("SELECT id, login FROM users;")
 
-        return jsonify({"jsonrpc": "2.0", "result": result, "id": data['id']})
+        users = cur.fetchall()
+        db_close(conn, cur)
 
-    except ValueError as e:
-        return jsonify({"jsonrpc": "2.0", "error": {"code": -32602, "message": str(e)}, "id": data.get('id', None)}), 400
+        # Преобразуем результаты в JSON-совместимый формат
+        users_list = [{'id': user['id'], 'login': user['login']} for user in users]
+
+        return jsonify({
+            "jsonrpc": "2.0",
+            "result": {
+                "users": users_list
+            },
+            "id": data.get("id")
+        })
     except Exception as e:
-        return jsonify({"jsonrpc": "2.0", "error": {"code": -32603, "message": "Ошибка сервера"}, "id": data.get('id', None)}), 500
+        return jsonify({
+            "jsonrpc": "2.0",
+            "error": {
+                "code": -32000,
+                "message": f"Server error: {str(e)}"
+            },
+            "id": None
+        }), 500
+
+
 
 def get_user_list(params):
     current_user = session.get('login')
