@@ -40,15 +40,14 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const apiUrl = '/rgz/users';
-        const responseMessage = document.getElementById('response-message');
 
-        // Функция отправки JSON-RPC запроса
+        // Функция для отправки JSON-RPC запроса
         const sendJsonRpcRequest = async (method, params) => {
             const payload = {
                 jsonrpc: "2.0",
                 method: method,
                 params: params,
-                id: new Date().getTime() // Генерируем уникальный ID для каждого запроса
+                id: new Date().getTime()
             };
 
             try {
@@ -66,27 +65,28 @@
                 }
                 return data.result;
             } catch (error) {
-                console.error('Ошибка:', error);
-                responseMessage.textContent = `Ошибка: ${error.message}`;
-                responseMessage.style.color = 'red';
+                console.error('Ошибка при отправке запроса:', error);
+                alert(`Ошибка: ${error.message}`);
                 return null;
             }
         };
 
-        // Отправка запроса для получения списка пользователей
+        // Функция для получения списка пользователей
         const getUserList = async () => {
             const result = await sendJsonRpcRequest('get_user_list', {});
             if (result) {
                 const usersList = document.getElementById('users-list');
-                result.users.forEach(user => {
-                    const listItem = document.createElement('li');
-                    listItem.innerHTML = `${user.login} <a href="/rgz/chat/${user.id}">Перейти в чат</a>`;
-                    usersList.appendChild(listItem);
-                });
+                if (usersList) {
+                    result.users.forEach(user => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `${user.login} <a href="/rgz/chat/${user.id}">Перейти в чат</a>`;
+                        usersList.appendChild(listItem);
+                    });
+                }
             }
         };
 
-        // Загрузка списка пользователей после загрузки страницы
+        // Вызов функции получения списка пользователей
         getUserList();
     });
 
