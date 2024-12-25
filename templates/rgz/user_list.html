@@ -39,31 +39,23 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const requestData = {
-            jsonrpc: "2.0",
-            method: "get_user_list",  // Исправленный метод, если сервер ожидает именно это
-            params: {},  // Параметры для получения списка пользователей (если нужно)
-            id: new Date().getTime()
-        };
-
-        fetch('/rgz/users', {  // Убедитесь, что правильный путь к JSON-RPC
-            method: 'POST',
+        fetch('/rgz/users', {  // Путь к вашему роуту
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
+            }
         })
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    alert('Ошибка при загрузке списка пользователей: ' + data.error.message);
-                } else {
+                if (data.status === 'success' && data.users) {
                     const usersList = document.getElementById('users-list');
-                    data.result.users.forEach(user => {
+                    data.users.forEach(user => {
                         const listItem = document.createElement('li');
                         listItem.innerHTML = `${user.login} <a href="/rgz/chat/${user.id}">Перейти в чат</a>`;
                         usersList.appendChild(listItem);
                     });
+                } else {
+                    alert('Ошибка при загрузке списка пользователей');
                 }
             })
             .catch(error => {
@@ -74,3 +66,4 @@
 </script>
 
 {% endblock %}
+
