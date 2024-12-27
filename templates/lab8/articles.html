@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 8{% endblock %}
+
+{% block style %}
+    <style>
+        .container {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .article-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .article-item {
+            margin-bottom: 20px;
+            border: 1px solid #ddddddc2;
+            padding: 15px;
+            border-radius: 5px;
+             background-color: #f8c0c0;
+        }
+        .article-title {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .article-text {
+             text-align: left;
+            margin-top: 10px;
+             white-space: pre-line;
+        }
+
+        .article-actions {
+             text-align: center;
+            margin-top: 10px;
+         }
+          .button-link {
+            border: 1px solid #eeb76f;
+            border-radius: 10px;
+            background-color: #cef5b3;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+            margin-right: 5px;
+         }
+    </style>
+{% endblock %}
+{% block main %}
+    <div class="container">
+        <h1>Список статей</h1>
+        <ul class="article-list">
+            {% for article in articles %}
+                <li class="article-item">
+                    <div class="article-title">{{ article.title }}</div>
+                    <div class="article-text">{{ article.article_text }}</div>
+                    <div class="article-actions">
+                        <a href="/lab8/articles/edit/{{ article.id }}" class="button-link">Редактировать</a>
+                        <a href="/lab8/articles/delete/{{ article.id }}" class="button-link delete-button" onclick="return confirmDelete()">Удалить</a>
+                    </div>
+                </li>
+            {% else %}
+                <li>Статей пока нет.</li>
+            {% endfor %}
+        </ul>
+        <a href="/lab8/create" class="button-link">Создать статью</a>
+    </div>
+    <script>
+        function confirmDelete() {
+             return confirm("Вы уверены, что хотите удалить статью?");
+        }
+    </script>
+{% endblock %}
