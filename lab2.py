@@ -27,6 +27,8 @@ def menu():
             <li><a href='/lab5'>Пятая лабораторная</a></li>
             <li><a href='/lab6'>Шестая лабораторная</a></li>
             <li><a href='/lab7'>Седьмая лабораторная</a></li>
+            <li><a href='/lab8'>Восьмая лабораторная</a></li>
+            <li><a href='http://127.0.0.1:5000/rgz/'>РГЗ</a></li>
         </ol>
         </main>
         <footer>
