@@ -9,12 +9,33 @@
 {% endblock %}
 
 {% block main %}
-<h1>Лабораторная работа 8</h1>
-<p>Пользователь: {{ user }}</p>
-<ul>
-    <li><a href="/lab8/login">Вход</a></li>
-    <li><a href="/lab8/register">Регистрация</a></li>
-    <li><a href="/lab8/articles">Список статей</a></li>
-    <li><a href="/lab8/create">Создать статью</a></li>
-</ul>
+    <div class="container">
+        <h1>База знаний</h1>
+    </div>
+    <p class="username">Пользователь: <span style="color: black">{{ login if login else 'anonymous' }}</span></p>
+    <div class="button-container">
+        <ol class="button-list">
+            <li class="button-item">
+                <a href="/lab8/login" class="button-link">Вход</a>
+            </li>
+            {% if login %}
+            <li class="button-item">
+                <a href="/lab8/logout" class="button-link">Выход</a>
+            </li>
+            {% endif %} 
+            <li class="button-item">
+                <a href="/lab8/register" class="button-link">Регистрация</a>
+            </li>
+            </li>
+             {% if login %}
+            <li class="button-item">
+                <a href="/lab8/articles" class="button-link">Список статей</a>
+            </li>
+            <li class="button-item">
+                 <a href="/lab8/create" class="button-link">Создать статью</a>
+            </li>
+             {% endif %}
+        </ol> 
+    </div>
+    
 {% endblock %}
