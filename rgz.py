@@ -147,6 +147,7 @@ def logout():
     return redirect(url_for('rgz.login'))
 
 
+
 @rgz.route('/rgz/')
 def main():
     user = session.get('login')
