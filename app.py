@@ -45,6 +45,7 @@ from lab5 import lab5
 from lab6 import lab6
 from lab7 import lab7
 from lab8 import lab8
+from lab9 import lab9
 from rgz import rgz
 
 
@@ -56,6 +57,7 @@ app.register_blueprint(lab5)
 app.register_blueprint(lab6)
 app.register_blueprint(lab7)
 app.register_blueprint(lab8)
+app.register_blueprint(lab9)
 app.register_blueprint(rgz)
 
 @app.route("/")
@@ -85,6 +87,7 @@ def menu():
             <li><a href='http://127.0.0.1:5000/lab6/'>Шестая лабораторная</a></li>
             <li><a href='http://127.0.0.1:5000/lab7/'>Седьмая лабораторная</a></li>
             <li><a href='http://127.0.0.1:5000/lab8/'>Восьмая лабораторная</a></li>
+            <li><a href='http://127.0.0.1:5000/lab9/'>Девятая лабораторная</a></li>
             <li><a href='http://127.0.0.1:5000/rgz/'>РГЗ</a></li>
         <ol>
         </main>
