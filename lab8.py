@@ -61,5 +61,9 @@ def register():
 def create_article():
     return "Создать статью (в разработке)"
 
-
+@lab8.route('/lab8/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/lab8/')
 
