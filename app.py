@@ -17,7 +17,7 @@ login_manager.init_app(app)
 def load_users(login_id):
     return users.query.get(int(login_id))
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'секретно-секретный секрет')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'very-secure-secret-key-here') 
 app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres') 
 
 if app.config['DB_TYPE'] == 'postgres':
@@ -26,6 +26,7 @@ if app.config['DB_TYPE'] == 'postgres':
     db_password = '123'
     host_ip = '127.0.0.1'
     host_port = 5432
+    options='-c client_encoding=UTF8'
 
     app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{host_ip}:{host_port}/{db_name}'
 
