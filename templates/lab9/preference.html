@@ -1,15 +1,14 @@
 {% extends "base.html" %}
-{% block laba %}Лабораторная работа 9{% endblock %}
 {% block script %}
 <style>
     h1 {
-        color: #0427c4; /* Красный цвет для заголовков */
+        color: #0427c4; 
         text-align: center;
         margin-top: 20px;
         font-size: 30px;
     }
     button {
-        background-color: #1f5cce; /* Зеленая кнопка */
+        background-color: #1f5cce; 
         color: white;
         padding: 10px 20px;
         border: none;
@@ -37,12 +36,11 @@
     }
     </style>
 {% endblock %}
-
 {% block main %}
-    <h1>Поздравления</h1>
+    <h1>Что вам больше нравится, {{ name }}?</h1>
     <form method="post">
-        <label for="name">Введите ваше имя:</label>
-        <input type="text" name="name" required>
+        <input type="radio" name="like" value="вкусное" required> Что-то вкусное<br>
+        <input type="radio" name="like" value="красивое"> Что-то красивое<br>
         <button type="submit">Далее</button>
     </form>
 {% endblock %}
